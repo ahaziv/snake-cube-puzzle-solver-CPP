@@ -7,4 +7,5 @@ add_executable(snake_cube_puzzle main.cpp
         snake_cube_solver.h
         snake_cube_solver.cpp
         connectivity_graph.cpp
-        connectivity_graph.h)
+        connectivity_graph.h
+        common.h)

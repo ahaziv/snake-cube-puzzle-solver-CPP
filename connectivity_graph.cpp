@@ -3,34 +3,64 @@
 
 #include <map>
 #include <tuple>
-#include <list>
-#include <array>
+#include <set>
+
 #include "connectivity_graph.h"
 
-class ConnectivityGraph {
-private:
-    int sideLength;
-    std::map<std::tuple<int, int, int>, std::list<std::tuple<int, int, int>>> graph;
-    const int neighborNodeBase[6][3] = {{-1, 0, 0}, {1, 0, 0},
-                                        {0, -1, 0}, {0, 1, 0},
-                                        {0, 0, -1}, {0, 0, 1}};
 
-    std::list<std::tuple<int, int, int>> getNeighborNodes(std::tuple<int, int, int> node){
-        std::list<std::tuple<int, int, int>> neighborNodes{(1, 1, 1)};
-        return neighborNodes;
-    }
+using namespace std;
 
-public:
-    ConnectivityGraph(int sideLength){
-        this->sideLength = sideLength;
-        for (int i=0; i<sideLength; i++){
-            for (int j=0; j<sideLength; j++){
-                for (int k=0; k<sideLength; k++) {
-                    std::tuple index(i, j, k);
-                    this->graph[index] = this->getNeighborNodes(index);
-                }
+BaseGraph::BaseGraph() {}
+BaseGraph::~BaseGraph() {}
+
+void EmptyGraph::deleteNode(tuple<int, int, int> node){}
+void EmptyGraph::addNode(tuple<int, int, int> node){}
+bool EmptyGraph::isConnected(){
+    return true;
+}
+
+ConnectivityGraph::ConnectivityGraph(int sideLength){         // TODO - why add the explicit here?
+    this->sideLength = sideLength;
+    for (int i=0; i<sideLength; i++){
+        for (int j=0; j<sideLength; j++){
+            for (int k=0; k<sideLength; k++) {
+                tuple index(i, j, k);
+                this->graph[index] = this->getNeighborNodes(index);
             }
         }
     }
+}
 
-};
+// ConnectivityGraph implementation
+set<tuple<int, int, int>> ConnectivityGraph::getNeighborNodes(tuple<int, int, int> node){
+    set<tuple<int, int, int>> neighborNodes({});      // TODO - implement
+    for (const auto& neighbor : this->neighborNodeBase) {
+        if (0 <= get<0>(node) + neighbor[0] <= this->sideLength
+        and 0 <= get<1>(node) + neighbor[1] <= this->sideLength
+        and 0 <= get<2>(node) + neighbor[2] <= this->sideLength){
+            tuple<int, int ,int> newNeighbor(get<0>(node) + neighbor[0],
+                                             get<1>(node) + neighbor[1],
+                                             get<2>(node) + neighbor[2]);
+            neighborNodes.insert(newNeighbor);
+        }
+    }
+    return neighborNodes;
+}
+
+
+void ConnectivityGraph::deleteNode(tuple<int, int, int> node){
+    set<tuple<int, int, int>> neighbors = this->graph[node];
+    this->graph.erase(node);
+    for (const auto& neighbor : neighbors) {
+        this->graph[neighbor].erase(neighbor);
+    }
+
+}
+
+void ConnectivityGraph::addNode(tuple<int, int, int> node){
+
+}
+
+bool ConnectivityGraph::isConnected(){
+    return true;      // TODO - implement
+}
