@@ -6,6 +6,7 @@
 #include <array>
 
 #include "snake_cube_solver.h"
+#include "grid_position.h"
 
 int main() {
     const uint sideLength = 3;
@@ -39,11 +40,15 @@ int main() {
     };
 
     const list< array<int, 3>> startingPositions = {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}};
+    list<GridPosition> startingGridPositions;
+    for (const auto& position : startingPositions){
+        startingGridPositions.emplace_back(position, sideLength);
+    }
     auto start = chrono::high_resolution_clock::now();
     cube solutionGrid;
     bool isSolved;
     uint stepNum;
-    tie(solutionGrid, isSolved, stepNum) = solveSnake(snakeLinks, sideLength, startingPositions, checkConnectivity);
+    tie(solutionGrid, isSolved, stepNum) = solveSnake(snakeLinks, sideLength, startingGridPositions, checkConnectivity);
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     if (isSolved){

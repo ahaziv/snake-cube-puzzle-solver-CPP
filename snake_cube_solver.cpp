@@ -4,16 +4,39 @@
 
 #include <tuple>
 #include <list>
-#include <array>
 #include <vector>
 
 #include "connectivity_graph.h"
 #include "snake_cube_solver.h"
+#include "grid_position.h"
 
 using namespace std;
 
-tuple<bool, int> solveCube(cube& spacegrid, list<int> snakeRemainder, array<int, 3> startPosition,
-                           array<int, 3> prevPosition, BaseGraph &connectivityGraph){
+vector<vector<int>> perpendicularDirections(vector<int> &direction){
+    // get the next possible directions according to the physical constraints
+    vector<vector<int>>  allDirections = {{-1, 0, 0},{1, 0, 0},
+                                          {0, -1, 0}, {0, 1, 0},
+                                          {0, 0, -1}, {0, 0, 1}};
+    if (direction[0] != 0){
+        vector<vector<int>> outputDirections = {allDirections[2], allDirections[3], allDirections[4], allDirections[5]};
+        return outputDirections;
+    }
+    if (direction[1] != 0){
+        vector<vector<int>> outputDirections = {allDirections[0], allDirections[1], allDirections[4], allDirections[5]};
+        return outputDirections;
+    }
+    if (direction[1] != 0){
+        vector<vector<int>> outputDirections = {allDirections[0], allDirections[1], allDirections[2], allDirections[3]};
+        return outputDirections;
+    }
+    else{
+        return allDirections;
+    }
+}
+
+
+tuple<bool, int> solveCube(cube& spacegrid, list<int> snakeRemainder, GridPosition pos, vector<int> prevDirection,
+                           BaseGraph &connectivityGraph){
     //  This recursive function tries filling the next link of the snake.
     //  If it fails in all directions - it returns False
     //  If no links remain (stopping condition) if returns the solution.
@@ -28,17 +51,46 @@ tuple<bool, int> solveCube(cube& spacegrid, list<int> snakeRemainder, array<int,
         tuple<bool, int> solution(true, 1);
         return solution;
     }
-    else{
-        tuple<bool, int> solution(false, 1);        // TODO - implement
-        return solution;
+    vector<vector<int>> dirGrid = perpendicularDirections(prevDirection);
+    uint steps = 0;
+    for (const vector<int>& direction: dirGrid) {
+        bool success = true;
+        for (uint i = 0; i< snakeRemainder.front(); i++){        // TODO - check what the method .front does
+            steps += 1;
+            pos.advancePosition(direction);
+            success = (pos.checkValidity() and spacegrid[pos[0]][pos[1]][pos[2]] == 0);     // check if the advancing position out of cube bounds/into occupied spaces
+            if (not success){break;}
+            spacegrid[pos[0]][pos[1]][pos[2]] = spacegrid[pos[0]][pos[1]][pos[2]] + i + 1;
+            connectivityGraph.deleteNode(make_tuple(pos[0], pos[1], pos[2]));
+        }
+        success = connectivityGraph.isConnected();
+        if (success) {
+            int tempSteps;
+            list<int> recursionSnake = snakeRemainder;
+            recursionSnake.pop_front();
+            tie(success, tempSteps) = solveCube(spacegrid, recursionSnake, pos,
+                                                direction, connectivityGraph);
+            steps += tempSteps;
+            if (success){
+                return make_tuple(true, steps);
+            }
+        }
+        if (!success){          // if solution has failed delete the filled spaces in spacegrid and fix connectivityGraph back to the previous position
+            for (uint i = 0; i < snakeRemainder.front(); i++) {
+                pos.retracePosition(direction);
+                spacegrid[pos[0]][pos[1]][pos[2]] = 0;
+                connectivityGraph.addNode(make_tuple(pos[0], pos[1], pos[2]));
+            }
+        }
     }
+    return make_tuple(false, steps);
 }
 
 
-tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, const list< array<int, 3> > &startingPositions, bool checkConnectivity){
+tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< GridPosition > startingPositions, bool checkConnectivity){
     // attempts solving the puzzle from different starting positions, if no positions returns a valid solution return false
     static cube spaceGrid(sideLength, vector<vector<uint>>(sideLength, vector<uint>(sideLength)));
-    *snake.begin() -= 1;                                                     // TODO - check this line does what I expect it does
+    *snake.begin() -= 1;
     int step_num = 0;
     for (const auto& position : startingPositions) {
         // initialize spaceGrid to zeros
@@ -59,8 +111,8 @@ tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, const list< 
 
         bool isSolved;
         int steps;
-        tie(isSolved, steps) = solveCube(spaceGrid, snake, position,
-                                                   position, connectivityGraph);
+        vector<int> direction({0, 0, 0});
+        tie(isSolved, steps) = solveCube(spaceGrid, snake, position, direction, connectivityGraph);
         step_num += steps;
         if (isSolved) {
             return make_tuple(spaceGrid, true, step_num);
