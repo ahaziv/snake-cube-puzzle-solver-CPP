@@ -57,13 +57,11 @@ tuple<bool, int> solveCube(cube& spacegrid, list<int> snakeRemainder, GridPositi
         bool success = true;
         for (uint i = 0; i< snakeRemainder.front(); i++){        // TODO - check what the method .front does
             steps += 1;
-            pos.advancePosition(direction);
-            success = (pos.checkValidity() and spacegrid[pos[0]][pos[1]][pos[2]] == 0);     // check if the advancing position out of cube bounds/into occupied spaces
+            success = pos.advancePosition(direction);
             if (not success){break;}
-            spacegrid[pos[0]][pos[1]][pos[2]] = spacegrid[pos[0]][pos[1]][pos[2]] + i + 1;
             connectivityGraph.deleteNode(make_tuple(pos[0], pos[1], pos[2]));
         }
-        success = connectivityGraph.isConnected();
+        success = connectivityGraph.isConnected() and success;
         if (success) {
             int tempSteps;
             list<int> recursionSnake = snakeRemainder;
@@ -87,9 +85,9 @@ tuple<bool, int> solveCube(cube& spacegrid, list<int> snakeRemainder, GridPositi
 }
 
 
-tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< GridPosition > startingPositions, bool checkConnectivity){
+tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< array<int, 3>> startingPositions, bool checkConnectivity){
     // attempts solving the puzzle from different starting positions, if no positions returns a valid solution return false
-    static cube spaceGrid(sideLength, vector<vector<uint>>(sideLength, vector<uint>(sideLength)));
+    cube spaceGrid(sideLength, vector<vector<uint>>(sideLength, vector<uint>(sideLength)));
     *snake.begin() -= 1;
     int step_num = 0;
     for (const auto& position : startingPositions) {
@@ -112,7 +110,8 @@ tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< GridPo
         bool isSolved;
         int steps;
         vector<int> direction({0, 0, 0});
-        tie(isSolved, steps) = solveCube(spaceGrid, snake, position, direction, connectivityGraph);
+        GridPosition gridPosition = GridPosition(position, sideLength, &spaceGrid);
+        tie(isSolved, steps) = solveCube(spaceGrid, snake, gridPosition, direction, connectivityGraph);
         step_num += steps;
         if (isSolved) {
             return make_tuple(spaceGrid, true, step_num);

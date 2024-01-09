@@ -8,20 +8,23 @@
 #include <vector>
 #include <array>
 
+#include "snake_cube_solver.h"
+
 using namespace std;
 
 class GridPosition {
 public:
     array<int, 3> position;
-    explicit GridPosition(array<int, 3> position, int sideLength);
-    void advancePosition(vector<int> direction);
+    explicit GridPosition(array<int, 3> position, int sideLength, cube* spaceGrid);
+    bool advancePosition(vector<int> direction);
     void retracePosition(vector<int> direction);
-    bool checkValidity();
     ~GridPosition();
     bool operator==(const GridPosition& otherPosition) const;
     int operator[](int coordinate) const;
 private:
     int sideLength;
+    cube spaceGrid;
+    bool checkValidity();
 };
 
 

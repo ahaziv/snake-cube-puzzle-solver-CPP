@@ -40,29 +40,29 @@ int main() {
     };
 
     const list< array<int, 3>> startingPositions = {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}};
-    list<GridPosition> startingGridPositions;
-    for (const auto& position : startingPositions){
-        startingGridPositions.emplace_back(position, sideLength);
-    }
+
     auto start = chrono::high_resolution_clock::now();
     cube solutionGrid;
     bool isSolved;
     uint stepNum;
-    tie(solutionGrid, isSolved, stepNum) = solveSnake(snakeLinks, sideLength, startingGridPositions, checkConnectivity);
+    tie(solutionGrid, isSolved, stepNum) = solveSnake(snakeLinks, sideLength, startingPositions, checkConnectivity);
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     if (isSolved){
-        cout << "A solution have been reached, steps performed: " << stepNum  << endl << "Solution: " << endl;
+        cout << "A solution have been reached, steps performed: " << stepNum  << endl << "Solution: ";
         for (int i = 0; i < sideLength; i++) {
-            cout << "Layer " << i << ":";
+            cout << endl << "Layer " << i << ":";
             for (int j = 0; j < sideLength; j++) {
                 cout << endl;
                 for (int k = 0; k < sideLength; k++) {
-                    cout << solutionGrid[i][j][k];
+                    if (solutionGrid[i][j][k] < 9){
+                        cout << " ";
+                    }
+                    cout << " " << solutionGrid[i][j][k];
                 }
             }
         }
     }
     else{cout << "No solution have been reached, steps performed: " << stepNum << endl;}
-    cout << "running time: " << duration.count() << " microseconds" << endl;
+    cout << endl << "running time: " << duration.count() << " microseconds" << endl;
 }
