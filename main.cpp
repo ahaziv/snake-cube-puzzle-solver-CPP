@@ -6,7 +6,6 @@
 #include <array>
 
 #include "snake_cube_solver.h"
-#include "grid_position.h"
 
 int main() {
     const uint sideLength = 3;
@@ -49,7 +48,7 @@ int main() {
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     if (isSolved){
-        cout << "A solution have been reached, steps performed: " << stepNum  << endl << "Solution: ";
+        cout << "A solution have been reached,"  << endl << "Solution: ";
         for (int i = 0; i < sideLength; i++) {
             cout << endl << "Layer " << i << ":";
             for (int j = 0; j < sideLength; j++) {
@@ -63,6 +62,6 @@ int main() {
             }
         }
     }
-    else{cout << "No solution have been reached, steps performed: " << stepNum << endl;}
-    cout << endl << "running time: " << duration.count() << " microseconds" << endl;
+    else{cout << "No solution have been reached";}
+    cout << endl << "running time: " << duration.count() << " microseconds" << endl << "steps performed: " << stepNum << endl;
 }

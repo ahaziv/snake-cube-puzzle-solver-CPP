@@ -1,30 +1,34 @@
 //
 // Created by ahazi on 1/8/2024.
 //
+#pragma once
 
 #ifndef SNAKE_CUBE_PUZZLE_GRIDPOSITION_H
 #define SNAKE_CUBE_PUZZLE_GRIDPOSITION_H
 
-#include <vector>
+#include <tuple>
+#include <list>
 #include <array>
-
-#include "snake_cube_solver.h"
+#include <vector>
 
 using namespace std;
 
+typedef unsigned  int uint;
+typedef vector<vector<vector<uint>>> cube;
+
+
 class GridPosition {
 public:
-    array<int, 3> position;
-    explicit GridPosition(array<int, 3> position, int sideLength, cube* spaceGrid);
-    bool advancePosition(vector<int> direction);
-    void retracePosition(vector<int> direction);
+    explicit GridPosition(const array<int, 3> &positionInp, int sideLengthInp);
+    bool advancePosition(vector<int> direction, int steps, cube &spaceGrid);
+    void retracePosition(vector<int> direction, int steps, cube &spaceGrid, bool fixGrid = true);
     ~GridPosition();
     bool operator==(const GridPosition& otherPosition) const;
     int operator[](int coordinate) const;
 private:
+    array<int, 3> position;
     int sideLength;
-    cube spaceGrid;
-    bool checkValidity();
+    bool checkValidity(cube &spaceGrid);
 };
 
 
