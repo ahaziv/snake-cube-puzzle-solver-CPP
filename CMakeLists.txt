@@ -9,4 +9,6 @@ add_executable(snake_cube_puzzle main.cpp
         connectivity_graph.cpp
         connectivity_graph.h
         grid_position.cpp
-        grid_position.h)
+        grid_position.h
+        connectivity_graph_test.cpp
+)
