@@ -35,12 +35,12 @@ ConnectivityGraph::ConnectivityGraph(int sideLengthInp){
 set<tuple<int, int, int>> ConnectivityGraph::getNeighborNodes(tuple<int, int, int> node){
     set<tuple<int, int, int>> neighborNodes({});
     for (const auto& neighbor : neighborNodeBase) {
-        if (0 <= get<0>(node) + neighbor[0] <= sideLength
-        and 0 <= get<1>(node) + neighbor[1] <= sideLength
-        and 0 <= get<2>(node) + neighbor[2] <= sideLength){
-            tuple<int, int ,int> newNeighbor(get<0>(node) + neighbor[0],
-                                             get<1>(node) + neighbor[1],
-                                             get<2>(node) + neighbor[2]);
+        tuple<int, int ,int> newNeighbor(get<0>(node) + neighbor[0],
+                                         get<1>(node) + neighbor[1],
+                                         get<2>(node) + neighbor[2]);
+        if (0 <= get<0>(newNeighbor) && get<0>(newNeighbor) < sideLength
+         && 0 <= get<1>(newNeighbor) && get<1>(newNeighbor) < sideLength
+         && 0 <= get<2>(newNeighbor) && get<2>(newNeighbor) < sideLength){
             neighborNodes.insert(newNeighbor);
         }
     }
@@ -54,7 +54,6 @@ void ConnectivityGraph::deleteNode(tuple<int, int, int> node){
     for (const auto& neighbor : neighbors) {
         graph[neighbor].erase(neighbor);
     }
-
 }
 
 void ConnectivityGraph::addNode(tuple<int, int, int> node){
@@ -95,3 +94,4 @@ bool ConnectivityGraph::isConnected(){
 
     }
 }
+
