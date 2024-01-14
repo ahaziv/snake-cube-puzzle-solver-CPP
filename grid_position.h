@@ -10,6 +10,7 @@
 #include <list>
 #include <array>
 #include <vector>
+#include "connectivity_graph.h"
 
 using namespace std;
 
@@ -20,8 +21,8 @@ typedef vector<vector<vector<uint>>> cube;
 class GridPosition {
 public:
     explicit GridPosition(const array<int, 3> &positionInp, int sideLengthInp);
-    bool advancePosition(vector<int> direction, int steps, cube &spaceGrid);
-    void retracePosition(vector<int> direction, int steps, cube &spaceGrid, bool fixGrid = true);
+    bool advancePosition(vector<int> direction, int steps, cube &spaceGrid, BaseGraph* graph);
+    void retracePosition(vector<int> direction, int steps, cube &spaceGrid, BaseGraph* graph, bool fixGrid = true);
     ~GridPosition();
     bool operator==(const GridPosition& otherPosition) const;
     int operator[](int coordinate) const;

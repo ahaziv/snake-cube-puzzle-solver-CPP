@@ -11,7 +11,7 @@ GridPosition::GridPosition(const array<int, 3>& positionInp, int sideLengthInp){
 
 GridPosition::~GridPosition() = default;
 
-bool GridPosition::advancePosition(vector<int> direction, int steps, cube &spaceGrid) {
+bool GridPosition::advancePosition(vector<int> direction, int steps, cube &spaceGrid, BaseGraph* graph) {
     int gridValue = spaceGrid[position[0]][position[1]][position[2]];
     int successfulSteps = 0;
     bool validStep;
@@ -25,18 +25,20 @@ bool GridPosition::advancePosition(vector<int> direction, int steps, cube &space
         }
         successfulSteps += 1;
         spaceGrid[position[0]][position[1]][position[2]] = gridValue + successfulSteps;
+        graph->deleteNode(make_tuple(position[0],position[1],position[2]));
     }
     if (!validStep){
-        retracePosition(direction, 1, spaceGrid, false);
-        retracePosition(direction, successfulSteps, spaceGrid, true);
+        retracePosition(direction, 1, spaceGrid, graph, false);
+        retracePosition(direction, successfulSteps, spaceGrid, graph, true);
     }
     return validStep;
 }
 
-void GridPosition::retracePosition(vector<int> direction, int steps, cube &spaceGrid, bool fixGrid) {
+void GridPosition::retracePosition(vector<int> direction, int steps, cube &spaceGrid, BaseGraph* graph, bool fixGrid) {
     for (int step = 0; step < steps; step++){
         if (fixGrid){
             spaceGrid[position[0]][position[1]][position[2]] = 0;
+            graph->addNode(make_tuple(position[0],position[1],position[2]));
         }
         for(int i = 0; i < 3; i++){
             position[i] -= direction[i];

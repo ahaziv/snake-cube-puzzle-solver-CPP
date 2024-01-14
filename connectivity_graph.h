@@ -8,6 +8,7 @@
 #include <map>
 #include <tuple>
 #include <set>
+#include <vector>
 
 using namespace std;
 
@@ -30,12 +31,14 @@ public:
 class ConnectivityGraph : public BaseGraph {
 private:
     unsigned int sideLength;
-    map<tuple<int, int, int>, set<tuple<int, int, int>>> graph;
+    set<int> nodes;
+    vector<vector<int>> edges;
     const int neighborNodeBase[6][3] = {{-1, 0, 0}, {1, 0, 0},
                                         {0, -1, 0}, {0, 1, 0},
                                         {0, 0, -1}, {0, 0, 1}};
 
-    set<tuple<int, int, int>> getNeighborNodes(tuple<int, int, int> node);
+    set<int> getNeighborNodes(tuple<int, int, int> node);
+    int indexToNum(int, int, int) const;
 
 public:
     explicit ConnectivityGraph(int sideLength);         // TODO - why add the explicit here?

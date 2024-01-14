@@ -36,7 +36,7 @@ vector<vector<int>> perpendicularDirections(vector<int> &direction){
 
 
 tuple<bool, int> solveCube(cube& spaceGrid, list<int> snakeRemainder, GridPosition pos, vector<int> prevDirection,
-                           BaseGraph &connectivityGraph){
+                           BaseGraph* graph){
     //  This recursive function tries filling the next link of the snake.
     //  If it fails in all directions - it returns False
     //  If no links remain (stopping condition) if returns the solution.
@@ -56,35 +56,32 @@ tuple<bool, int> solveCube(cube& spaceGrid, list<int> snakeRemainder, GridPositi
     for (const vector<int>& direction: dirGrid) {
         bool success = true;
         steps += snakeRemainder.front();
-        success = pos.advancePosition(direction, snakeRemainder.front(), spaceGrid);
+        success = pos.advancePosition(direction, snakeRemainder.front(), spaceGrid, graph);
         if (not success){continue;}
-        for (uint i = 0; i< snakeRemainder.front(); i++){
-            connectivityGraph.deleteNode(make_tuple(pos[0], pos[1], pos[2]));
+        success = graph->isConnected();
+        if (!success){
+            int pause = 1;
         }
-        success = connectivityGraph.isConnected();
         if (success) {
             int tempSteps;
             list<int> recursionSnake = snakeRemainder;
             recursionSnake.pop_front();
-            tie(success, tempSteps) = solveCube(spaceGrid, recursionSnake, pos,
-                                                direction, connectivityGraph);
+            tie(success, tempSteps) = solveCube(spaceGrid, recursionSnake, pos, direction, graph);
             steps += tempSteps;
             if (success){
                 return make_tuple(true, steps);
             }
         }
         if (!success){          // if solution has failed delete the filled spaces in spaceGrid and fix connectivityGraph back to the previous position
-            pos.retracePosition(direction, snakeRemainder.front(), spaceGrid);
-            for (uint i = 0; i < snakeRemainder.front(); i++) {
-                connectivityGraph.addNode(make_tuple(pos[0], pos[1], pos[2]));
-            }
+            pos.retracePosition(direction, snakeRemainder.front(), spaceGrid, graph);
         }
     }
     return make_tuple(false, steps);
 }
 
 
-tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< array<int, 3>> startingPositions, bool checkConnectivity){
+tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, const list< array<int, 3>> &startingPositions,
+                                  bool checkConnectivity){
     // attempts solving the puzzle from different starting positions, if no positions returns a valid solution return false
     cube spaceGrid(sideLength, vector<vector<uint>>(sideLength, vector<uint>(sideLength)));
     *snake.begin() -= 1;
@@ -99,18 +96,20 @@ tuple<cube, bool, int> solveSnake(list<int>& snake, int sideLength, list< array<
             }
         }
         spaceGrid[position[0]][position[1]][position[2]] = 1;
-        EmptyGraph connectivityGraph = EmptyGraph();
+        unique_ptr<BaseGraph> myGraph;
         if (checkConnectivity){
-            ConnectivityGraph connectivityGraph = ConnectivityGraph(sideLength);
+            myGraph = make_unique<ConnectivityGraph>(sideLength);
+        } else{
+            myGraph = make_unique<EmptyGraph>();
         }
-        std::tuple coordinate(position[0], position[1], position[2]);
-        connectivityGraph.deleteNode(coordinate);
+        tuple coordinate(position[0], position[1], position[2]);
+        myGraph->deleteNode(coordinate);
 
         bool isSolved;
         int steps;
         vector<int> direction({0, 0, 0});
         GridPosition gridPosition = GridPosition(position, sideLength);
-        tie(isSolved, steps) = solveCube(spaceGrid, snake, gridPosition, direction, connectivityGraph);
+        tie(isSolved, steps) = solveCube(spaceGrid, snake, gridPosition, direction, myGraph.get());
         step_num += steps;
         if (isSolved) {
             return make_tuple(spaceGrid, true, step_num);
